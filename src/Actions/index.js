@@ -14,6 +14,7 @@ export const actLogout = () => {
 }
 
 export const actLogin = (data) => {
+    console.log("aclogin")
     return {
         type: types.LOGIN_ACCOUNT,
         data: data

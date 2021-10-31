@@ -6,8 +6,12 @@ const request = {
     get: (url) => {
         url = config.HOST + '/' + url
         return fetch(url)
-            .catch(err => { console.log(err) })
-            .then((response) => response.json())
+          .catch(err => {
+            console.log(err);
+          })
+          .then(response => {
+            return response.json();
+          });
     },
     post: async (data, url) => {
         url = config.HOST + '/' + url

@@ -5,11 +5,12 @@ var initailState = data ? data : {}
 
 
 
-const currentuser = (state = initailState, action) => {
+const currentUser = (state = initailState, action) => {
     var { accessToken, userInfo } = action
     var newState = { ...state }
     switch (action.type) {
         case types.LOGIN_ACCOUNT:
+            console.log("logindata "+ action.data);
             newState = action.data
             localStorage.setItem('USER', JSON.stringify(newState));
             return newState
@@ -27,4 +28,4 @@ const currentuser = (state = initailState, action) => {
 
 }
 
-export default currentuser;
+export default currentUser;

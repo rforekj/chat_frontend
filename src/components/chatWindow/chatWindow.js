@@ -2,103 +2,127 @@ import React, { Component } from 'react'
 import ContactList from './contactList'
 import MessageBox from './messageBox'
 import API from '../../services/api'
+import * as SockJS from "sockjs-client";
+import Stomp, { over } from "stompjs";
+import config from "../../config";
+import dataService from '../../Network/dataService';
 
 
 export default class ChatWindow extends Component {
     constructor(props) {
         super(props)
         this.state = {
-            users: [],
-            messageToUser: "",
+            channels: [],
+            selectedChannel: {},
             ws: null,
-            chats: {},
+            chats: [],
             lastSentMessage: undefined
         }
-        this.getSelectedUser = this.getSelectedUser.bind(this)
+        this.getSelectedChannel = this.getSelectedChannel.bind(this)
         this.getNewMsgObj = this.getNewMsgObj.bind(this)
     }
 
     async componentDidMount() {
+        
+        var username = this.props.loggedInUserObj._id;
+        var signalProtocolManagerUser = this.props.signalProtocolManagerUser;
 
         // API call to fetch all contacts
         try {
-            let contactsResult = await API.getContacts(this.props.loggedInUserObj._id, this.props.loggedInUserObj.role)
-            this.setState({ users: contactsResult.data.data })
+            let channelsResult = await dataService.getChannelByUser(this.props.loggedInUserObj._id)
+            this.setState({ channels: channelsResult });
         } catch (error) {
             console.log("error:", error);
         }
 
         // Fetch Existing Chats from LocalStorage
-        let lsChats = JSON.parse(localStorage.getItem(this.props.loggedInUserObj._id + "_messages"))
-        this.setState({ chats: { ...lsChats } })
+        // let lsChats = JSON.parse(localStorage.getItem(this.props.loggedInUserObj._id + "_messages"))
 
-        // Web Socket Connection
-        let ws = new WebSocket(`ws://localhost:4000/chat/${this.props.loggedInUserObj._id}`)
-        console.log("New Web Socket Connection: ", ws);
+        // var socket = new SockJS(config.HOST+"/gs-guide-websocket");
+        
+        // let stompClient = Stomp.over(socket);
+        // //const headers = { Authorization: `Bearer ${jwt}` };
+        // stompClient.connect({}, (frame) => {
+        //   console.log("Connected: " + frame);
+        //   stompClient.subscribe("/topic/1e1b9578-7d14-4610-819f-ed66cc791995",  (e) => {
+        //     let newMessage = JSON.parse(e.body);
+        //     // In case message is from self, save state-stored message to Chats i.e. no need of using/decrypting the received message
+        //     // This is only for verifying that the messages have successfully been received.
+        //     // if (newMessage.createdBy === username) {
+        //     //   newMessage.message = this.state.lastSentMessage;
+        //     // } else {
+        //     //   // Otherwise decrypt it and then save to Chats
+        //     //   // Decryption using Signal Protocol
+        //     //   let decrytedMessage = await signalProtocolManagerUser.decryptMessageAsync(newMessage.createdBy, newMessage.message);
+        //     //   newMessage.message = decrytedMessage;
+        //     // }
 
-        ws.onopen = () => {
-            console.log("Connected Websocket main component.");
-            this.setState({ ws: ws });
-        }
+        //     // Update message data to Chats & LocalStorage -> 2 Scenarios 
+        //     // 1. If the Chat already exists
+            
+        //     console.log("chats statse" + this.state.chats);
 
-        ws.onmessage = async (e) => {
-            let newMessage = JSON.parse(e.data)
-            // In case message is from self, save state-stored message to Chats i.e. no need of using/decrypting the received message
-            // This is only for verifying that the messages have successfully been received.
-            if (newMessage.senderid === this.props.loggedInUserObj._id) {
-                newMessage.message = this.state.lastSentMessage
-            } else { // Otherwise decrypt it and then save to Chats
-                // Decryption using Signal Protocol
-                let decrytedMessage = await this.props.signalProtocolManagerUser.decryptMessageAsync(newMessage.senderid, newMessage.message)
-                newMessage.message = decrytedMessage
-            }
-
-            // Update message data to Chats & LocalStorage -> 2 Scenarios
-            // 1. If the Chat already exists
-            if (newMessage.chatId in this.state.chats) {
-                this.setState(prevState => ({
-                    chats: {
-                        ...prevState.chats, [newMessage.chatId]: {
-                            ...prevState.chats[newMessage.chatId],
-                            messages: [...prevState.chats[newMessage.chatId].messages.concat(newMessage)]
-                        }
-                    }
-                }), () => localStorage.setItem(this.props.loggedInUserObj._id + "_messages", JSON.stringify(this.state.chats)))
-            }
-            // 2. In case the Chat does not exist, Create New Chat
-            else {
-                let newChat = {
-                    chatId: newMessage.chatId,
-                    members: [newMessage.senderid, newMessage.receiverid],
-                    messages: []
-                }
-                newChat.messages.push(newMessage)
-                this.setState(prevState => ({
-                    chats: { ...prevState.chats, [newMessage.chatId]: newChat }
-                }), () => localStorage.setItem(this.props.loggedInUserObj._id + "_messages", JSON.stringify(this.state.chats)))
-            }
-        }
-
-        ws.onclose = () => {
-            console.log("Disconnected Websocket main component.");
-            // redirect to login
-        }
+        //     //if (newMessage.channelId in this.state.chats) {
+        //       this.setState(prevState => ({ chats: { ...prevState.chats, [newMessage.channelId]: { ...prevState.chats[newMessage.channelId], messages: [...prevState.chats[newMessage.channelId].messages.concat(newMessage)] } } }), () => localStorage.setItem(username + "_messages", JSON.stringify(this.state.chats)));
+        //     // } else {
+        //     //   // 2. In case the Chat does not exist, Create New Chat
+        //     //   let newChat = { chatId: newMessage.channelId, members: [newMessage.createdBy, newMessage.channelId], messages: [] };
+        //     //   newChat.messages.push(newMessage);
+        //     //   this.setState(prevState => ({ chats: { ...prevState.chats, [newMessage.channelId]: newChat } }), () => localStorage.setItem(username + "_messages", JSON.stringify(this.state.chats)));
+        //     // }
+        //   });
+        // });
     }
 
     // Method To Update the Selected User from Contact List Component to the Message Box Component
-    getSelectedUser(selectedUser) {
-        this.setState({ messageToUser: selectedUser })
+    async getSelectedChannel(selectedChannel) {
+        this.setState({ selectedChannel: selectedChannel })
+        try {
+            let postsResult = await dataService.getPostByChannel({
+                channelId: selectedChannel.id,
+                offset:0,
+                limit:100
+            })
+            console.log("data"+postsResult.data)
+            this.setState({
+                chats: postsResult.data
+            });
+             var socket = new SockJS(config.HOST+"/gs-guide-websocket");
+        
+        let stompClient = Stomp.over(socket);
+        //const headers = { Authorization: `Bearer ${jwt}` };
+        stompClient.connect({}, (frame) => {
+          console.log("Connected: " + frame);
+          stompClient.subscribe("/topic/"+selectedChannel.id,  (e) => {
+            let newMessage = JSON.parse(e.body);
+        
+            //if (newMessage.channelId in this.state.chats) {
+              this.setState(prevState => ({ chats: { ...prevState.chats,  newMessage} }),
+               () => localStorage.setItem(this.props.loggedInUserObj._id + "_messages", JSON.stringify(this.state.chats)));
+            // } else {
+            //   // 2. In case the Chat does not exist, Create New Chat
+            //   let newChat = { chatId: newMessage.channelId, members: [newMessage.createdBy, newMessage.channelId], messages: [] };
+            //   newChat.messages.push(newMessage);
+            //   this.setState(prevState => ({ chats: { ...prevState.chats, [newMessage.channelId]: newChat } }), () => localStorage.setItem(username + "_messages", JSON.stringify(this.state.chats)));
+            // }
+          });
+        });
+
+        } catch (error) {
+            console.log("error:", error);
+        }
     }
 
     // Method to Send New Message using Web Socket when User hits send button from Message Box component
     async getNewMsgObj(newMsgObj) {
-        let selectedUserChatId = this.getSelectedUserChatId()
-        let msgToSend = { chatId: selectedUserChatId, senderid: this.props.loggedInUserObj._id, receiverid: this.state.messageToUser._id, ...newMsgObj }
+        let msgToSend = { channelId: this.state.selectedChannel.id, ...newMsgObj };
         // Send Message for Encryption to Signal Server, then send the Encrypted Message to Push server
         try {
-            let encryptedMessage = await this.props.signalProtocolManagerUser.encryptMessageAsync(this.state.messageToUser._id, newMsgObj.message);
-            msgToSend.message = encryptedMessage
-            this.state.ws.send(JSON.stringify(msgToSend))
+            // let encryptedMessage = await this.props.signalProtocolManagerUser.encryptMessageAsync(this.state.selectedChannel._id, newMsgObj.message);
+            // msgToSend.message = encryptedMessage
+            // this.state.ws.send(JSON.stringify(msgToSend))
+            dataService.createPost(msgToSend);
+
             this.setState({ lastSentMessage: newMsgObj.message }) // Storing last-sent message for Verification with Received Message
         } catch (error) {
             console.log(error);
@@ -106,31 +130,30 @@ export default class ChatWindow extends Component {
     }
 
     // Method to return the chatID of the Currently Selected User
-    getSelectedUserChatId() {
+    getSelectedChannelId() {
         // Because of the state selectedUserChatId problem, we are selecting the chatId everytime a new message is being sent
-        let selectedUserChatId = undefined
-        for (let chat of Object.values(this.state.chats)) {
-            if (chat.members.includes(this.state.messageToUser._id)) {
-                selectedUserChatId = chat.chatId
-                break
-            }
-        }
-        return selectedUserChatId
+        // let selectedChannelId = undefined
+        // for (let chat of Object.values(this.state.chats)) {
+        //     if (chat.members.includes(this.state.selectedChannel._id)) {
+        //         selectedChannelId = chat.chatId
+        //         break
+        //     }
+        // }
+        // return selectedChannelId
     }
 
     render() {
         return (
             <div className="container flex mx-auto m-2 rounded h-screen bg-white border border-blue-800 bg-gray-100">
-                {(this.state.users.length > 0) && <ContactList
-                    users={this.state.users}
-                    selectedUser={this.getSelectedUser}
-                    chats={this.state.chats}
+                {(this.state.channels.length > 0) && <ContactList
+                    channels={this.state.channels}
+                    selectedChannel={this.getSelectedChannel}
                 />}
-                {this.state.messageToUser && <MessageBox
-                    selectedUser={this.state.messageToUser}
+                {this.state.selectedChannel && <MessageBox
+                    selectedChannel={this.state.selectedChannel}
                     loggedInUserDP={this.props.loggedInUserObj.img}
                     setNewMsgObj={this.getNewMsgObj}
-                    messages={(this.state.chats[this.getSelectedUserChatId()]) && this.state.chats[this.getSelectedUserChatId()].messages}
+                    messages={(this.state.chats)}
                 />}
             </div>
         )

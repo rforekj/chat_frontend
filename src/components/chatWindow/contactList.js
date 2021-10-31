@@ -4,29 +4,21 @@ export default class ContactList extends Component {
     constructor(props) {
         super(props)
         this.state = {
-            users: this.props.users
+            channels: this.props.channels
         }
     }
 
-    setSelectedUser(selectedUser) {
-        this.props.selectedUser(selectedUser)
+    setSelectedChannel(selectedChannel) {
+        this.props.selectedChannel(selectedChannel)
     }
 
-    // Method to Update Last Message
-    getLastMessage(userid) {
-        for (let chat of Object.values(this.props.chats)) {
-            if (chat.members.includes(userid)) {
-                return chat.messages[chat.messages.length - 1]
-            }
-        }
-    }
-
-    getLastMessageDetails(user) {
-        let lastMessage = this.getLastMessage(user._id)
+    getLastMessageDetails(channel) {
+        let lastMessage = channel.lastPost
+        console.log("last pst "+lastMessage)
         const lastMessageDetails = (
             <>
                 <div className="grid w-full">
-                    <div className="contact-name font-bold px-2">{user.name}</div>
+                    <div className="contact-name font-bold px-2">{channel.name}</div>
                     {lastMessage ? <div className="last-message px-2 text-sm">{lastMessage.message}</div> : null}
                 </div>
                 {lastMessage ? <div className="last-message-time w-1/4 text-right">{lastMessage.date}</div> : null}
@@ -35,17 +27,17 @@ export default class ContactList extends Component {
         return lastMessageDetails
     }
 
-    getContacts() {
-
-        const contactDetails = this.state.users.map(user =>
-            <div className="user flex mt-2 p-2 border-b " id={user._id} key={user._id} onClick={() => this.setSelectedUser(user)}>
+    getChannels() {
+        const channelDetails = this.state.channels.map(channel =>
+            <div className="user flex mt-2 p-2 border-b " id={channel.id} key={channel.id} onClick={() => this.setSelectedChannel(channel)}>
                 <div className="w-1/4 rounded-full relative h-12 text-center">
-                    <img className="profile-picture absolute h-full object-cover self-center" src={"/images/" + user.img} alt="dp" />
+                    <img className="profile-picture absolute h-full object-cover self-center" src={"/images/" + channel.img} alt="dp" />
+                    {channel.name}
                 </div>
-                {this.getLastMessageDetails(user)}
+                {this.getLastMessageDetails(channel)}
             </div>
         )
-        return (contactDetails)
+        return (channelDetails)
     }
 
     render() {
@@ -58,7 +50,7 @@ export default class ContactList extends Component {
                     <i className="las la-ellipsis-v p-2 text-xl"></i>
                 </div>
                 <div className="contact-list grid-cols-1 p-2">
-                    {this.getContacts()}
+                    {this.getChannels()}
                 </div>
             </div>
         )

@@ -73,9 +73,10 @@ export class Login extends Component {
 }
 
 const mapDispatchToProps = (dispatch) => {
+    console.log("jhelo")
     return {
         onLogin: (data) => {
-            console.log("data"+data)
+            console.log("data1"+data)
             dispatch(actLogin(data))
 
         },
