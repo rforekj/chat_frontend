@@ -5,8 +5,8 @@ let token = JSON.parse(localStorage.getItem('USER')) ? JSON.parse(localStorage.g
 // let token = localStorage.setItem('user', JSON.stringify(user))
 let store = null;
 let api = {
-    setStore: (newStore) => {
-        store = newStore;
+    setToken: () => {
+        token = JSON.parse(localStorage.getItem("USER")) ? JSON.parse(localStorage.getItem("USER"))["accessToken"] : null;
     },
     getToken: () => {
         if(token==null)

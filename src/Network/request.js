@@ -5,7 +5,13 @@ import api from '../components/Global/api';
 const request = {
     get: (url) => {
         url = config.HOST + '/' + url
-        return fetch(url)
+        let headers = {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + api.getToken(),
+            'Accept-Language': 'vi'
+        }
+        return fetch(url, { method: 'GET', headers })
           .catch(err => {
             console.log(err);
           })

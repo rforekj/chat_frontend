@@ -8,8 +8,8 @@ export default class ChatApp extends Component {
   constructor(props) {
     super(props)
     this.state = {
-      isLoggedIn: false,
-      loggedInUserObj: {},
+      isLoggedIn: JSON.parse(localStorage.getItem('USER')) ? true : false,
+      loggedInUserObj: JSON.parse(localStorage.getItem('USER')) ? {username:JSON.parse(localStorage.getItem('USER'))['username']} : {},
       dummySignalServer: new SignalServerStore(),
       signalProtocolManagerUser: undefined
     }
@@ -19,7 +19,7 @@ export default class ChatApp extends Component {
   setLoggedinUser(loggedInUserObj) {
     this.setState({ isLoggedIn: true, loggedInUserObj: { ...loggedInUserObj } }, () => {
       // Initializing signal server here
-      createSignalProtocolManager(loggedInUserObj._id, this.state.dummySignalServer)
+      createSignalProtocolManager(loggedInUserObj.username, this.state.dummySignalServer)
         .then(signalProtocolManagerUser => {
           this.setState({ signalProtocolManagerUser: signalProtocolManagerUser })
         })

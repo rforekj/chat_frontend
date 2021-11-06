@@ -14,9 +14,15 @@ export const actLogout = () => {
 }
 
 export const actLogin = (data) => {
-    console.log("aclogin")
     return {
         type: types.LOGIN_ACCOUNT,
+        data: data
+    }
+}
+
+export const actSaveInfo = (data) => {
+    return {
+        type: types.SAVE_INFO,
         data: data
     }
 }

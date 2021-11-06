@@ -1,8 +1,9 @@
 import React, { Component } from 'react'
 import API from '../../services/api'
 import dataService from '../../Network/dataService';
-import { actLogin, actLogout } from '../../Actions';
+import { actLogin, actLogout, actSaveInfo } from '../../Actions';
 import { connect } from 'react-redux';
+import api from '../Global/api';
 
 
 export class Login extends Component {
@@ -15,6 +16,7 @@ export class Login extends Component {
     }
 
     onLoginComplete = (user) => {
+        this.props.onSaveInfo(user);
         this.props.loginProp(user)
     }
 
@@ -25,7 +27,18 @@ export class Login extends Component {
                 username: this.state.username,
                 password: this.state.password
             })
-            this.onLoginComplete({_id : this.state.username})
+            this.props.onLogin({
+              accessToken: loginResult.jwttoken
+            });
+            api.setToken();
+            let userResult = await dataService.currentUser()
+            this.onLoginComplete({
+              username: userResult.username,
+              avatar: userResult.avatar,
+              fullName: userResult.fullName,
+              email: userResult.email,
+              active: userResult.active
+            });
         } catch (error) {
             //let element = document.querySelector(".incorrect-user")
             //element.innerText = "Some Error Occurred."
@@ -73,12 +86,12 @@ export class Login extends Component {
 }
 
 const mapDispatchToProps = (dispatch) => {
-    console.log("jhelo")
     return {
         onLogin: (data) => {
-            console.log("data1"+data)
             dispatch(actLogin(data))
-
+        },
+        onSaveInfo: (data) => {
+            dispatch(actSaveInfo(data))
         },
     }
 }

@@ -14,7 +14,6 @@ export default class ContactList extends Component {
 
     getLastMessageDetails(channel) {
         let lastMessage = channel.lastPost
-        console.log("last pst "+lastMessage)
         const lastMessageDetails = (
             <>
                 <div className="grid w-full">
@@ -30,10 +29,14 @@ export default class ContactList extends Component {
     getChannels() {
         const channelDetails = this.state.channels.map(channel =>
             <div className="user flex mt-2 p-2 border-b " id={channel.id} key={channel.id} onClick={() => this.setSelectedChannel(channel)}>
-                <div className="w-1/4 rounded-full relative h-12 text-center">
-                    <img className="profile-picture absolute h-full object-cover self-center" src={"/images/" + channel.img} alt="dp" />
-                    {channel.name}
-                </div>
+                {channel.type === 'DIRECT' &&<div className="w-1/4 rounded-full relative h-12 text-center">
+                    <img className="profile-picture absolute h-full object-cover self-center" src={channel.members[0].avatar} alt="dp" />
+                    <div>{channel.members[0].fullName}</div>
+                </div>}
+                {channel.type === 'GROUP' &&<div className="w-1/4 rounded-full relative h-12 text-center">
+                    <img className="profile-picture absolute h-full object-cover self-center" src={channel.name} alt="dp" />
+                    <div>{channel.avatar}</div>
+                </div>}
                 {this.getLastMessageDetails(channel)}
             </div>
         )
