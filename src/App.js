@@ -9,7 +9,7 @@ export default class ChatApp extends Component {
     super(props)
     this.state = {
       isLoggedIn: JSON.parse(localStorage.getItem('USER')) ? true : false,
-      loggedInUserObj: JSON.parse(localStorage.getItem('USER')) ? {username:JSON.parse(localStorage.getItem('USER'))['username']} : {},
+      loggedInUserObj: JSON.parse(localStorage.getItem('USER')) ? {username:JSON.parse(localStorage.getItem('USER'))['userInfo']} : {},
       dummySignalServer: new SignalServerStore(),
       signalProtocolManagerUser: undefined
     }

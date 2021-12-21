@@ -3,7 +3,7 @@ import config from '../config';
 // let cors = require('cors');
 import api from '../components/Global/api';
 const request = {
-    get: (url) => {
+    get: async (url) => {
         url = config.HOST + '/' + url
         let headers = {
             'Accept': 'application/json',
@@ -11,13 +11,27 @@ const request = {
             'Authorization': 'Bearer ' + api.getToken(),
             'Accept-Language': 'vi'
         }
-        return fetch(url, { method: 'GET', headers })
-          .catch(err => {
-            console.log(err);
-          })
-          .then(response => {
-            return response.json();
-          });
+        // return fetch(url, { method: 'GET', headers })
+        //   .catch(err => {
+        //     console.log(err);
+        //   })
+        //   .then(response => {
+        //     return response.json();
+        //   });
+        let response = await fetch(url, {
+                crossDomain: true,
+                method: 'GET',
+                headers
+            });
+        let rs = await response.json();
+            switch (response.status) {
+                case 200: return rs
+                case 401: return logoutUser()
+                default: {
+                    console.log('err')
+                    throw (rs.message)
+                }
+            }
     },
     post: async (data, url) => {
         url = config.HOST + '/' + url
@@ -55,7 +69,36 @@ const request = {
             throw error
 
         }
+    },
+    postForm: async (data, url) => {
+        url = config.HOST + '/' + url
+        let headers = {
+            'Authorization': 'Bearer ' + api.getToken(),
+        }
+        try {
+            let response = await fetch(url, {
+                crossDomain: true,
+                method: 'POST',
+                headers,
+                body: data,
+            });
 
+            let rs = await response.json();
+            switch (response.status) {
+                case 200: return rs
+                case 401: return logoutUser()
+                default: {
+                    console.log('err')
+                    throw (rs.message)
+                }
+            }
+        } catch (error) {
+            console.log(error)
+            if (error.msg) {
+                console.log(error.msg)
+            }
+            throw error
+        }
     }
 }
 function logoutUser() {

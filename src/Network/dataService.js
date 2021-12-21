@@ -16,7 +16,7 @@ let dataService = {
     return request.get(url);
   },
   getChannelByUser: () => {
-    let url = "channel"; 
+    let url = "channel";
     return request.get(url);
   },
   getUserByChannel: channel => {
@@ -36,6 +36,18 @@ let dataService = {
       "&limit=" +
       params.limit;
     return request.get(url);
+  },
+  searchUser: params => {
+    let url = "user/search?key=" + params;
+    return request.get(url);
+  },
+  getChannelWithUser: params => {
+    let url = "channel/channel-with-user?userId=" + params;
+    return request.get(url);
+  },
+  postFile: params => {
+    let url = "post/file";
+    return request.postForm(params, url);
   }
 };
 
