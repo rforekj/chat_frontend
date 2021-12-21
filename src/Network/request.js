@@ -11,13 +11,6 @@ const request = {
             'Authorization': 'Bearer ' + api.getToken(),
             'Accept-Language': 'vi'
         }
-        // return fetch(url, { method: 'GET', headers })
-        //   .catch(err => {
-        //     console.log(err);
-        //   })
-        //   .then(response => {
-        //     return response.json();
-        //   });
         let response = await fetch(url, {
                 crossDomain: true,
                 method: 'GET',

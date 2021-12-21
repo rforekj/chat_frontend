@@ -69,6 +69,19 @@ export default class MessageBox extends Component {
     console.log("post file success ", resp.name)
     this.setState({fileName: resp.name})
   }
+  downloadFile(filename, fileUrl) {
+    console.log("file ", filename)
+    fetch(fileUrl, { crossDomain: true, method: "GET"})
+    .then(response => {
+				response.blob().then(blob => {
+					let url = window.URL.createObjectURL(blob);
+					let a = document.createElement('a');
+					a.href = url;
+					a.download = filename;
+					a.click();
+				});
+      })
+  }
 
   fetchMoreData = () => {
     this.props.loadMoreMessage();
@@ -95,9 +108,14 @@ export default class MessageBox extends Component {
                     className="outgoing w-3/4 justify-end float-right flex my-2"
                   >
 
-                    {message.filenames && <div>
-                        <i className="fa fa-file" style={{fontSize:"48px", color:"red"}} />
-                      </div>}
+                    {message.filenames &&
+                    <button
+                      className="rounded-full focus:outline-none place-self-center transform hover:scale-110 motion-reduce:transform-none"
+                      onClick={() => this.downloadFile(message.filenames, message.fileUrl)}
+                    >
+                        <i className="fa fa-file" style={{ fontSize: "48px", color: "red" }} />
+                      </button>
+                    }
 
                     <div className=" w-max bg-gray-200 text-black shadow-lg clear-both p-2 rounded-md">
                       {message.message}
@@ -129,9 +147,14 @@ export default class MessageBox extends Component {
                       {message.message}
                     </div>
 
-                    {message.filenames && <div>
+                    {message.filenames &&
+                    <button
+                      className="rounded-full focus:outline-none place-self-center transform hover:scale-110 motion-reduce:transform-none"
+                      onClick={() => this.downloadFile(message.filenames, message.fileUrl)}
+                    >
                         <i className="fa fa-file" style={{ fontSize: "48px", color: "red" }} />
-                      </div>}
+                      </button>
+                    }
                   </div>;
             }.bind(this)
           )}
