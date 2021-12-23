@@ -48,6 +48,10 @@ let dataService = {
   postFile: params => {
     let url = "post/file";
     return request.postForm(params, url);
+  },
+  callVideo: params => {
+    let url = "post/video";
+    return request.post(params, url);
   }
 };
 

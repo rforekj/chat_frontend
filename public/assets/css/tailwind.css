@@ -18441,6 +18441,7 @@ video {
 
 .w-16 {
   width: 4rem;
+  flex-shrink:0;
 }
 
 .w-20 {

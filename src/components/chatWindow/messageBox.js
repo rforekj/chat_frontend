@@ -31,7 +31,6 @@ export default class MessageBox extends Component {
   }
 
   componentDidUpdate() {
-    console.log("load more ", this.props.loadMore);
     if (
       Object.keys(this.props.selectedChannel).length !== 0 &&
       !this.props.loadMore
@@ -87,6 +86,11 @@ export default class MessageBox extends Component {
     this.props.loadMoreMessage();
     this.setState({ hasMore: true });
   };
+
+  callVideo() {
+    console.log("video")
+    this.props.sendOrAcceptInvitation(true, this.props.selectedChannel.id);
+  }
   // Method to Display Messages
   addMessagesToChat() {
     if (this.props.messages.length > 0) {
@@ -118,9 +122,17 @@ export default class MessageBox extends Component {
                     }
 
                     <div className=" w-max bg-gray-200 text-black shadow-lg clear-both p-2 rounded-md">
-                      {message.message}
+                      <div className="grid flex-1">
+                        {message.message}
+                        <div className="flex justify-between">
+                          <div className="last-message-time w-1/4 text-right text-grey" style={{color:"gray"}}>
+                            {message.createdTime}
+                          </div>
+                          <div></div>
+                        </div>
+                      </div>
                     </div>
-                    <div className="w-16 rounded-full relative h-16 mx-2 px-2">
+                    <div className="w-16 rounded-full relative h-16 mx-2 px-2" style={{flexShrink:0}}>
                       {(message.createdBy !==
                         this.props.messages[
                           index + 1 < this.props.messages.length
@@ -139,75 +151,30 @@ export default class MessageBox extends Component {
                 );
               else
                 return <div key={message.id} className="incoming w-3/4 flex my-2">
-                    <div className="w-16 rounded-full relative h-16 mx-2 px-2">
+                    <div className="w-16 rounded-full relative h-16 mx-2 px-2" style={{ flexShrink: 0 }}>
                       {(message.createdBy !== this.props.messages[index + 1 < this.props.messages.length ? index + 1 : index].createdBy || index + 1 === this.props.messages.length) && <img className="profile-picture absolute h-full object-cover self-center p-2" style={{ borderRadius: 50 }} src={this.props.members[message.createdBy]} alt="dp" />}
                     </div>
 
                     <div className="w-max bg-gray-900 text-white shadow-lg clear-both p-2 rounded-md">
-                      {message.message}
+                      <div className="grid flex-1">
+                        {message.message}
+                        <div className="flex justify-between">
+                          <div></div>
+                          <div className="last-message-time w-1/4 text-right text-grey" style={{color:"gray"}}>
+                            {message.createdTime}
+                          </div>
+                        </div>
+                      </div>
                     </div>
 
-                    {message.filenames &&
-                    <button
-                      className="rounded-full focus:outline-none place-self-center transform hover:scale-110 motion-reduce:transform-none"
-                      onClick={() => this.downloadFile(message.filenames, message.fileUrl)}
-                    >
+                    {message.filenames && <button className="rounded-full focus:outline-none place-self-center transform hover:scale-110 motion-reduce:transform-none" onClick={() => this.downloadFile(message.filenames, message.fileUrl)}>
                         <i className="fa fa-file" style={{ fontSize: "48px", color: "red" }} />
-                      </button>
-                    }
+                      </button>}
                   </div>;
             }.bind(this)
           )}
         </InfiniteScroll>
       );
-
-      // const msgContent = this.props.messages.map(
-      //   function(message, index) {
-      //     if (message.createdBy === this.props.loggedInUsername)
-      //       return (
-      //         <div
-      //           key={message.id}
-      //           className="outgoing w-3/4 justify-end float-right flex my-2"
-      //         >
-      //           <div className=" w-max bg-gray-200 text-black shadow-lg clear-both p-2 rounded-md">
-      //             {message.message}
-      //           </div>
-      //           <div className="w-16 rounded-full relative h-16 mx-2 px-2">
-      //             {(message.createdBy !==
-      //               this.props.messages[
-      //                 index + 1 < this.props.messages.length ? index + 1 : index
-      //               ].createdBy ||
-      //               index + 1 === this.props.messages.length) &&
-      //               <img
-      //                 className="profile-picture absolute h-full object-cover self-center p-2"
-      //                 src={this.props.loggedInUserAvatar}
-      //                 alt="dp"
-      //               />}
-      //           </div>
-      //         </div>
-      //       );
-      //     else
-      //       return (
-      //         <div key={message.id} className="incoming w-3/4 flex my-2">
-      //           <div className="w-16 rounded-full relative h-16 mx-2 px-2">
-      //             {(message.createdBy !==
-      //               this.props.messages[
-      //                 index + 1 < this.props.messages.length ? index + 1 : index
-      //               ].createdBy ||
-      //               index + 1 === this.props.messages.length) &&
-      //               <img
-      //                 className="profile-picture absolute h-full object-cover self-center p-2"
-      //                 src={this.props.members[message.createdBy]}
-      //                 alt="dp"
-      //               />}
-      //           </div>
-      //           <div className=" w-max bg-gray-900 text-white shadow-lg clear-both p-2 rounded-md">
-      //             {message.message}
-      //           </div>
-      //         </div>
-      //       );
-      //   }.bind(this)
-      // );
       return msgContent;
     }
   }
@@ -231,7 +198,12 @@ export default class MessageBox extends Component {
                 {this.props.selectedChannel.members[0].fullName}
               </div>
               <div className="icons w-1/4 text-right mr-4">
-                <i className="fas fa-video p-2 text-l" />
+                <button
+                  className="rounded-full focus:outline-none place-self-center transform hover:scale-110 motion-reduce:transform-none"
+                  onClick={() => this.callVideo()}
+                >
+                  <i className="fas fa-video p-2 text-l" />
+                </button>
                 <i className="fa fa-phone p-2 text-l" />
                 <i className="fa fa-ellipsis-v p-2 text-l" />
               </div>

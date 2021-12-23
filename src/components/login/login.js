@@ -15,13 +15,12 @@ export class Login extends Component {
         }
     }
 
-    onLoginComplete = (user) => {
-        this.props.onSaveInfo(user);
-        this.props.loginProp(user)
+    onLoginComplete = async(user) => {
+        await this.props.onSaveInfo(user);
+        this.props.loginProp({username: user})
     }
 
     login = async () => {
-        // Call Login API to get user ID if the user exists in DB
         try {
             let loginResult = await dataService.login({
                 username: this.state.username,
@@ -40,8 +39,7 @@ export class Login extends Component {
               active: userResult.active
             });
         } catch (error) {
-            //let element = document.querySelector(".incorrect-user")
-            //element.innerText = "Some Error Occurred."
+
         }
     }
 
@@ -56,7 +54,7 @@ export class Login extends Component {
             <div className="bg-gray-900">
                 <div className="login container mx-auto w-full max-w-xs items-center pt-12 h-screen">
                     <form action="chat.html" method="GET" className="bg-white shadow-md rounded px-8 pt-8 pb-8 m-4">
-                        <label className="block text-lg font-bold mb-4 py-2 text-center bg-gray-800 rounded text-white">Healthcare Chat Login</label>
+                        <label className="block text-lg font-bold mb-4 py-2 text-center bg-gray-800 rounded text-white">Chat Login</label>
                         <div className="mb-4">
                             <label className="block text-gray-700 text-sm font-bold mb-2">
                                 Username</label>
@@ -70,15 +68,13 @@ export class Login extends Component {
                             <label className="incorrect-user text-red-500"></label>
                             <input value={this.state.password} onChange={(e) => this.handlePass(e)}
                                 className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                                id="username" type="text" placeholder="Enter Password here..." />
+                                id="password" type="password" placeholder="Enter Password here..." />
                         </div>
                         <button id="login" onClick={() => this.login()}
                             className="btn-primary rounded-full text-white font-bold py-2 px-4 mx-16 rounded focus:outline-none focus:shadow-outline place-self-center"
                             type="button">
                             Login</button>
                     </form>
-                    <p className="text-center text-gray-500 text-xs">
-                        &copy;2020 QED42. All rights reserved.</p>
                 </div>
             </div>
         )

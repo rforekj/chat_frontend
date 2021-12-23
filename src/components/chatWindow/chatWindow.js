@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { Component, useRef } from "react";
 import ContactList from "./contactList";
 import MessageBox from "./messageBox";
 import API from "../../services/api";
@@ -7,6 +7,7 @@ import Stomp, { over } from "stompjs";
 import config from "../../config";
 import dataService from "../../Network/dataService";
 import api from "../Global/api";
+import SimplePeer, { Instance, SignalData } from "simple-peer";
 
 var loadMore = false;
 
@@ -19,7 +20,7 @@ export default class ChatWindow extends Component {
       ws: null,
       chats: [],
       members: {},
-      lastSentMessage: undefined
+      simplePeer: null
     };
     this.getSelectedChannel = this.getSelectedChannel.bind(this);
     this.getNewMsgObj = this.getNewMsgObj.bind(this);
@@ -36,26 +37,40 @@ export default class ChatWindow extends Component {
     } catch (error) {
       console.log("error:", error);
     }
-    var socket = new SockJS(config.HOST + "/ws?token=" + api.getToken());
-
-    let stompClient = Stomp.over(socket);
-    stompClient.connect({}, (frame) => {
+    var socket = new SockJS(config.HOST + "/wss?token=" + api.getToken());
+    this.setState({ ws: socket });
+    console.log("socket", socket)
+    //let stompClient = Stomp.over(socket);
+    const stompClient = Stomp.client(config.WS + "/wss?token=" + api.getToken());
+    stompClient.heartbeat.outgoing = 0;
+    stompClient.heartbeat.incoming = 0;
+    console.log("stompClient", stompClient);
+    stompClient.connect({}, frame => {
       loadMore = false;
-      console.log("Connected: " + username);
-      stompClient.subscribe("/topic/" + username, (e) => {
-        console.log("mesage" + e.body);
-
+      console.log("frame", frame);
+      stompClient.subscribe("/topic/" + username, async(e) => {
         let newMessage = JSON.parse(e.body);
-        //if (newMessage.channelId in this.state.chats) {
-        if (newMessage.channelId === this.state.selectedChannel.id) {
-          let a = this.state.chats.concat(newMessage);
-          this.setState({ chats: a });
+        if (!newMessage.payload) {
+          if (newMessage.channelId === this.state.selectedChannel.id) {
+            let a = this.state.chats.concat(newMessage);
+            this.setState({ chats: a });
+          }
+          let channelsResult = await dataService.getChannelByUser();
+          this.setState({ channels: channelsResult });
+        } else {
+            let payload = JSON.parse(newMessage.payload)
+            if (payload.type === "offer") {
+              this.setState({offerSignal: payload})
+              this.setState({connectionStatus: "RECEIVING"})
+              this.setState({channelVideoCallRequest: newMessage.channelId})
+            } else if (payload.type === "answer") {
+              if(this.state.simplePeer) {
+                this.state.simplePeer.signal(payload);
+              }
+            } 
         }
-        // this.state.channels.forEach(channel => {
-        //   if(channel.id === newMessage.channelId) {
-        //     channel.lastMessage = newMessage.message;
-        //   }
-        // })
+
+        
       });
     });
   }
@@ -68,8 +83,8 @@ export default class ChatWindow extends Component {
         offset: 0,
         limit: 25
       });
-      this.setState({offset : 0})
-      console.log("offset " + this.state.offset)
+      this.setState({ offset: 0 });
+      console.log("offset " + this.state.offset);
       let memberResult = await dataService.getUserByChannel(selectedChannel.id);
       selectedChannel.members = memberResult;
       this.setState({ selectedChannel: selectedChannel });
@@ -90,9 +105,9 @@ export default class ChatWindow extends Component {
     try {
       let a = this.state.chats.concat(newMsgObj);
       this.setState({ chats: a });
-      dataService.createPost(msgToSend);
-
-      this.setState({ lastSentMessage: newMsgObj.message }); 
+      await dataService.createPost(msgToSend);
+      let channelsResult = await dataService.getChannelByUser();
+      this.setState({ channels: channelsResult });
     } catch (error) {
       console.log(error);
     }
@@ -101,42 +116,75 @@ export default class ChatWindow extends Component {
   async loadMoreMessage() {
     loadMore = true;
     this.setState({ offset: this.state.offset + 1 });
-    console.log("loadmorit", this.state.offset);
     let postsResult = await dataService.getPostByChannel({
-        channelId: this.state.selectedChannel.id,
-        offset: this.state.offset,
-        limit: 25
+      channelId: this.state.selectedChannel.id,
+      offset: this.state.offset,
+      limit: 25
     });
     this.setState({ chats: postsResult.concat(this.state.chats) });
   }
 
-  getSelectedChannelId() {
+  getSelectedChannelId() {}
 
-  }
+  sendOrAcceptInvitation = (isInitiator, channelId, offer) => {
+    navigator.mediaDevices
+      .getUserMedia({ video: true, audio: true })
+      .then(mediaStream => {
+        const video = this.videoSelf;
+        video.srcObject = mediaStream;
+        video.play();
+
+        const sp = new SimplePeer({
+          trickle: false,
+          initiator: isInitiator,
+          stream: mediaStream
+        });
+
+        if (isInitiator) this.setState({ connectionStatus: "OFFERING" });
+        else offer && sp.signal(offer);
+
+        sp.on("signal", data => {
+          let request = { channelId: channelId, payload: JSON.stringify(data) };
+          console.log("req", request);
+          dataService.callVideo(request);
+        });
+        sp.on("connect", () =>
+          this.setState({ connectionStatus: "CONNECTED" })
+        );
+        sp.on("stream", stream => {
+          const video = this.videoCaller;
+          video.srcObject = stream;
+          video.play();
+        });
+        this.setState({ simplePeer: sp });
+      });
+  };
 
   render() {
-    return (
-      <div className="container flex mx-auto m-2 rounded h-screen bg-white border border-blue-800 bg-gray-100">
-        {this.state.channels.length > 0 && (
-          <ContactList
-            channels={this.state.channels}
-            selectedChannel={this.getSelectedChannel}
-            channelAvatar={this.props.loggedInUserObj.username.avatar}
-          />
-        )}
-        {this.state.selectedChannel && (
-          <MessageBox
-            selectedChannel={this.state.selectedChannel}
-            loggedInUserAvatar={this.props.loggedInUserObj.username.avatar}
-            loggedInUsername={this.props.loggedInUserObj.username.username}
-            setNewMsgObj={this.getNewMsgObj}
-            loadMoreMessage={this.loadMoreMessage}
-            members={this.state.members}
-            messages={this.state.chats}
-            loadMore={loadMore}
-          />
-        )}
-      </div>
-    );
+    return <div className="container flex mx-auto m-2 rounded h-screen bg-white border border-blue-800 bg-gray-100">
+        <ContactList channels={this.state.channels} selectedChannel={this.getSelectedChannel} channelAvatar={this.props.loggedInUserObj.username.avatar} />
+        {this.state.selectedChannel && <MessageBox selectedChannel={this.state.selectedChannel} loggedInUserAvatar={this.props.loggedInUserObj.username.avatar} loggedInUsername={this.props.loggedInUserObj.username.username} setNewMsgObj={this.getNewMsgObj} loadMoreMessage={this.loadMoreMessage} members={this.state.members} messages={this.state.chats} loadMore={loadMore} sendOrAcceptInvitation={this.sendOrAcceptInvitation} />}
+        
+        <div style={{ display: "flex", justifyContent: "center", flexDirection:"column" }}>
+          <video ref={el => {
+              this.videoSelf = el;
+            }} style={{ height: "200px", width: "300px" }} />
+
+          <video ref={el => {
+              this.videoCaller = el;
+            }} style={{ height: "200px", width: "300px" }} />
+
+          {this.state.connectionStatus === "RECEIVING" && <button
+              onClick={() =>
+                this.sendOrAcceptInvitation(
+                  false,
+                  this.state.channelVideoCallRequest,
+                  this.state.offerSignal
+                )}
+            >
+              ANSWER CALL
+            </button>}
+        </div>
+      </div>;
   }
 }

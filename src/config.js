@@ -1,5 +1,5 @@
 const config = {
-  HOST: "http://localhost:8088",
-  WS_HOST: "ws://localhost:8088"
+  HOST: "https://14.177.43.34:8088",
+  WS: "wss://14.177.43.34:8088"
 };
 export default config;
