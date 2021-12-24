@@ -37,17 +37,15 @@ export default class ChatWindow extends Component {
     } catch (error) {
       console.log("error:", error);
     }
-    var socket = new SockJS(config.HOST + "/wss?token=" + api.getToken());
-    this.setState({ ws: socket });
-    console.log("socket", socket)
+    // var socket = new SockJS(config.HOST + "/wss?token=" + api.getToken());
+    // this.setState({ ws: socket });
+    // console.log("socket", socket)
     //let stompClient = Stomp.over(socket);
     const stompClient = Stomp.client(config.WS + "/wss?token=" + api.getToken());
     stompClient.heartbeat.outgoing = 0;
     stompClient.heartbeat.incoming = 0;
-    console.log("stompClient", stompClient);
     stompClient.connect({}, frame => {
       loadMore = false;
-      console.log("frame", frame);
       stompClient.subscribe("/topic/" + username, async(e) => {
         let newMessage = JSON.parse(e.body);
         if (!newMessage.payload) {
