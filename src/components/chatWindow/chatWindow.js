@@ -3,11 +3,11 @@ import ContactList from "./contactList";
 import MessageBox from "./messageBox";
 import API from "../../services/api";
 import * as SockJS from "sockjs-client";
-import Stomp, { over } from "stompjs";
 import config from "../../config";
 import dataService from "../../Network/dataService";
 import api from "../Global/api";
 import SimplePeer, { Instance, SignalData } from "simple-peer";
+import Stomp, { over } from "stompjs";
 
 var loadMore = false;
 
@@ -28,6 +28,11 @@ export default class ChatWindow extends Component {
   }
 
   async componentDidMount() {
+
+    window.addEventListener("beforeunload", function(e) {
+      dataService.offline();
+    });
+
     var username = this.props.loggedInUserObj.username.username;
 
     // API call to fetch all contacts
@@ -37,15 +42,17 @@ export default class ChatWindow extends Component {
     } catch (error) {
       console.log("error:", error);
     }
-    // var socket = new SockJS(config.HOST + "/wss?token=" + api.getToken());
+    //var socket = new SockJS(config.HOST + "/wss?token=" + api.getToken());
+    //socket.onclose = function
     // this.setState({ ws: socket });
     // console.log("socket", socket)
     //let stompClient = Stomp.over(socket);
     const stompClient = Stomp.client(config.WS + "/wss?token=" + api.getToken());
+    
     stompClient.heartbeat.outgoing = 0;
     stompClient.heartbeat.incoming = 0;
     stompClient.connect({}, frame => {
-      loadMore = false;
+      //loadMore = false;
       stompClient.subscribe("/topic/" + username, async(e) => {
         let newMessage = JSON.parse(e.body);
         if (!newMessage.payload) {
@@ -67,10 +74,15 @@ export default class ChatWindow extends Component {
               }
             } 
         }
-
-        
       });
-    });
+    }, () => {
+         console.log("disconnect from server");
+         dataService.offline();
+       });
+      //  stompClient.disconnect(() => {
+      //    console.log("disconnect from server");
+      //    dataService.offline();
+      //  })
   }
 
   // Method To Update the Selected User from Contact List Component to the Message Box Component
