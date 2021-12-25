@@ -2,7 +2,8 @@ import React, {Component} from "react";
 import moment from "moment";
 import InfiniteScroll from "react-infinite-scroll-component";
 import dataService from "../../Network/dataService";
-import {Input} from "antd";
+import {CloseOutlined} from "@ant-design/icons";
+
 
 
 export default class MessageBox extends Component {
@@ -243,9 +244,12 @@ export default class MessageBox extends Component {
                                 <div className="file-tagged">
                                     {this.state.fileName ?
                                         <>
-                                            <i className="las la-paperclip p-2 text-xl"/>
+                                            <i className="las la-paperclip p-2 text-xl " style={{color: "black"}}/>
                                             {this.state.fileName}
-                                        </> : null}
+                                            <CloseOutlined style={{color:"red"}} onClick={()=>this.setState({fileName:""})  } className="ml-2"/>
+                                        </>
+
+                                        : null}
                                 </div>
                             </div>
 
