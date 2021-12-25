@@ -127,7 +127,7 @@ export default class MessageBox extends Component {
                                             </div>
                                             {message.filenames &&
                                                 <a
-                                                    className="rounded-full focus:outline-none place-self-center transform hover:scale-110 motion-reduce:transform-none"
+                                                    className="rounded-full overflow focus:outline-none place-self-center transform hover:scale-110 motion-reduce:transform-none"
                                                     onClick={() => this.downloadFile(message.filenames, message.fileUrl)}
                                                 >
                                                     {message.filenames}
@@ -171,7 +171,7 @@ export default class MessageBox extends Component {
                                         </div>
                                         {message.filenames &&
                                                 <a
-                                                    className="rounded-full focus:outline-none place-self-center transform hover:scale-110 motion-reduce:transform-none"
+                                                    className="rounded-full overflow focus:outline-none place-self-center transform hover:scale-110 motion-reduce:transform-none"
                                                     onClick={() => this.downloadFile(message.filenames, message.fileUrl)}
                                                 >
                                                     {message.filenames}

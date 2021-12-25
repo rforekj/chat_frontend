@@ -78,3 +78,11 @@
 .file-tagged{
     color: dodgerblue;
 }
+
+.overflow{
+    white-space: nowrap;
+    width: 130px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+}
