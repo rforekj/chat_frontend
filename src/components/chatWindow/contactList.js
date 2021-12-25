@@ -36,7 +36,8 @@ export default class ContactList extends Component {
   }
 
   async logout(){
-    
+      localStorage.clear("USER");
+      window.location.href = "/";
   }
 
   render() {
@@ -48,7 +49,8 @@ export default class ContactList extends Component {
     const content=(
         <div>
           <ul>
-            <li><a>Đăng xuất</a></li>
+            <li><a>Sửa thông tin</a></li>
+            <li><button onClick={() => this.logout()}>Đăng xuất</button></li>
           </ul>
         </div>
 
