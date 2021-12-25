@@ -109,7 +109,7 @@ export default class MessageBox extends Component {
                 return (
                   <div
                     key={message.id}
-                    className="outgoing w-3/4 justify-end float-right flex my-2"
+                    className="w-3/4 justify-end float-right flex my-2"
                   >
 
                     {message.filenames &&
@@ -121,16 +121,15 @@ export default class MessageBox extends Component {
                       </button>
                     }
 
-                    <div className=" w-max bg-gray-200 text-black shadow-lg clear-both p-2 rounded-md">
-                      <div className="grid flex-1">
+                    <div className="bg-gray-200 text-black shadow-lg clear-both p-2 rounded-md">
+                      <div >
                         {message.message}
-                        <div className="flex justify-between">
-                          <div className="last-message-time w-1/4 text-right text-grey" style={{color:"gray"}}>
-                            {message.createdTime}
-                          </div>
-                          <div></div>
-                        </div>
                       </div>
+                        <div className="text-right" style={{color:"gray"}}>
+                          {message.createdTime}
+                        </div>
+
+
                     </div>
                     <div className="w-16 rounded-full relative h-16 mx-2 px-2" style={{flexShrink:0}}>
                       {(message.createdBy !==
@@ -155,15 +154,12 @@ export default class MessageBox extends Component {
                       {(message.createdBy !== this.props.messages[index + 1 < this.props.messages.length ? index + 1 : index].createdBy || index + 1 === this.props.messages.length) && <img className="profile-picture absolute h-full object-cover self-center p-2" style={{ borderRadius: 50 }} src={this.props.members[message.createdBy]} alt="dp" />}
                     </div>
 
-                    <div className="w-max bg-gray-900 text-white shadow-lg clear-both p-2 rounded-md">
-                      <div className="grid flex-1">
+                    <div className="bg-gray-900 text-white shadow-lg clear-both p-2 rounded-md">
+                      <div>
                         {message.message}
-                        <div className="flex justify-between">
-                          <div></div>
-                          <div className="last-message-time w-1/4 text-right text-grey" style={{color:"gray"}}>
-                            {message.createdTime}
-                          </div>
-                        </div>
+                      </div>
+                        <div className="text-right" style={{color:"gray"}}>
+                          {message.createdTime}
                       </div>
                     </div>
 
