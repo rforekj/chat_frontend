@@ -64,3 +64,17 @@
     width: 28%;
     display: none;
 } */
+
+.message-input-box{
+    display:flex;
+    padding: 10px;
+    bottom:0;
+    position: absolute;
+    background: white;
+    width:100%;
+    align-items: flex-end;
+}
+
+.file-tagged{
+    color: dodgerblue;
+}
