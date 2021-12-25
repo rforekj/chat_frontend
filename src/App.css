@@ -81,7 +81,7 @@
 
 .overflow{
     white-space: nowrap;
-    width: 130px;
+    width: 350px;
     overflow: hidden;
     text-overflow: ellipsis;
     display: inline-block;
