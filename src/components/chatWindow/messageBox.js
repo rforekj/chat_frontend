@@ -169,16 +169,18 @@ export default class MessageBox extends Component {
                                         <div>
                                             {message.message}
                                         </div>
+                                        {message.filenames &&
+                                                <a
+                                                    className="rounded-full focus:outline-none place-self-center transform hover:scale-110 motion-reduce:transform-none"
+                                                    onClick={() => this.downloadFile(message.filenames, message.fileUrl)}
+                                                >
+                                                    {message.filenames}
+                                                </a>
+                                            }
                                         <div className="text-right" style={{color: "gray"}}>
                                             {message.createdTime}
                                         </div>
                                     </div>
-
-                                    {message.filenames && <button
-                                        className="rounded-full focus:outline-none place-self-center transform hover:scale-110 motion-reduce:transform-none"
-                                        onClick={() => this.downloadFile(message.filenames, message.fileUrl)}>
-                                        <i className="fa fa-file" style={{fontSize: "48px", color: "red"}}/>
-                                    </button>}
                                 </div>;
                         }.bind(this)
                     )}
