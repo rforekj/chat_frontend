@@ -10,6 +10,7 @@ import SimplePeer, { Instance, SignalData } from "simple-peer";
 import Stomp, { over } from "stompjs";
 
 var loadMore = false;
+var localStream;
 
 export default class ChatWindow extends Component {
   constructor(props) {
@@ -28,7 +29,6 @@ export default class ChatWindow extends Component {
   }
 
   async componentDidMount() {
-
     window.addEventListener("beforeunload", function(e) {
       dataService.offline();
     });
@@ -47,42 +47,48 @@ export default class ChatWindow extends Component {
     // this.setState({ ws: socket });
     // console.log("socket", socket)
     //let stompClient = Stomp.over(socket);
-    const stompClient = Stomp.client(config.WS + "/wss?token=" + api.getToken());
-    
+    const stompClient = Stomp.client(
+      config.WS + "/wss?token=" + api.getToken()
+    );
+
     stompClient.heartbeat.outgoing = 0;
     stompClient.heartbeat.incoming = 0;
-    stompClient.connect({}, frame => {
-      //loadMore = false;
-      stompClient.subscribe("/topic/" + username, async(e) => {
-        let newMessage = JSON.parse(e.body);
-        if (!newMessage.payload) {
-          if (newMessage.channelId === this.state.selectedChannel.id) {
-            let a = this.state.chats.concat(newMessage);
-            this.setState({ chats: a });
-          }
-          let channelsResult = await dataService.getChannelByUser();
-          this.setState({ channels: channelsResult });
-        } else {
-            let payload = JSON.parse(newMessage.payload)
+    stompClient.connect(
+      {},
+      frame => {
+        //loadMore = false;
+        stompClient.subscribe("/topic/" + username, async e => {
+          let newMessage = JSON.parse(e.body);
+          if (!newMessage.payload) {
+            if (newMessage.channelId === this.state.selectedChannel.id) {
+              let a = this.state.chats.concat(newMessage);
+              this.setState({ chats: a });
+            }
+            let channelsResult = await dataService.getChannelByUser();
+            this.setState({ channels: channelsResult });
+          } else {
+            let payload = JSON.parse(newMessage.payload);
             if (payload.type === "offer") {
-              this.setState({offerSignal: payload})
-              this.setState({connectionStatus: "RECEIVING"})
-              this.setState({channelVideoCallRequest: newMessage.channelId})
+              this.setState({ offerSignal: payload });
+              this.setState({ connectionStatus: "RECEIVING" });
+              this.setState({ channelVideoCallRequest: newMessage.channelId });
             } else if (payload.type === "answer") {
-              if(this.state.simplePeer) {
+              if (this.state.simplePeer) {
                 this.state.simplePeer.signal(payload);
               }
-            } 
-        }
-      });
-    }, () => {
-         console.log("disconnect from server");
-         dataService.offline();
-       });
-      //  stompClient.disconnect(() => {
-      //    console.log("disconnect from server");
-      //    dataService.offline();
-      //  })
+            }
+          }
+        });
+      },
+      () => {
+        console.log("disconnect from server");
+        dataService.offline();
+      }
+    );
+    //  stompClient.disconnect(() => {
+    //    console.log("disconnect from server");
+    //    dataService.offline();
+    //  })
   }
 
   // Method To Update the Selected User from Contact List Component to the Message Box Component
@@ -136,12 +142,31 @@ export default class ChatWindow extends Component {
 
   getSelectedChannelId() {}
 
+  turnVideo() {
+    const video = this.videoSelf;
+
+    if (localStream.getTracks()[1].enabled) {
+      video.pause();
+      localStream.getTracks()[1].enabled = false;
+    } else {
+      video.play();
+      localStream.getTracks()[1].enabled = true;
+    }
+  }
+
+  vidOn() {
+    const video = this.videoSelf;
+    video.play();
+    localStream.getTracks()[1].enabled = true;
+  }
+
   sendOrAcceptInvitation = (isInitiator, channelId, offer) => {
     navigator.mediaDevices
       .getUserMedia({ video: true, audio: true })
       .then(mediaStream => {
         const video = this.videoSelf;
         video.srcObject = mediaStream;
+        localStream = mediaStream;
         video.play();
 
         const sp = new SimplePeer({
@@ -174,8 +199,8 @@ export default class ChatWindow extends Component {
     return <div className="container flex mx-auto m-2 rounded h-screen bg-white border border-blue-800 bg-gray-100">
         <ContactList channels={this.state.channels} selectedChannel={this.getSelectedChannel} channelAvatar={this.props.loggedInUserObj.username.avatar} />
         {this.state.selectedChannel && <MessageBox selectedChannel={this.state.selectedChannel} loggedInUserAvatar={this.props.loggedInUserObj.username.avatar} loggedInUsername={this.props.loggedInUserObj.username.username} setNewMsgObj={this.getNewMsgObj} loadMoreMessage={this.loadMoreMessage} members={this.state.members} messages={this.state.chats} loadMore={loadMore} sendOrAcceptInvitation={this.sendOrAcceptInvitation} />}
-        
-        <div style={{ display: "flex", justifyContent: "center", flexDirection:"column" }}>
+
+        <div style={{ display: "flex", justifyContent: "center", flexDirection: "column" }}>
           <video ref={el => {
               this.videoSelf = el;
             }} style={{ height: "200px", width: "300px" }} />
@@ -193,6 +218,12 @@ export default class ChatWindow extends Component {
                 )}
             >
               ANSWER CALL
+            </button>}
+
+          {this.state.connectionStatus === "CONNECTED" && <button
+              onClick={() => this.turnVideo()}
+            >
+              Turn on/off camera
             </button>}
         </div>
       </div>;
