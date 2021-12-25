@@ -1,7 +1,7 @@
 import React, {Component} from "react";
 import dataService from "../../Network/dataService";
 import "antd/dist/antd.css";
-import {AutoComplete} from "antd";
+import {AutoComplete, Popover} from "antd";
 import group from '../../images/group.png'
 
 const {Option} = AutoComplete;
@@ -35,15 +35,29 @@ export default class ContactList extends Component {
     }
   }
 
+  async logout(){
+    
+  }
+
   render() {
     const children = this.state.suggestion.map(suggestion =>
       <Option key={suggestion.id}>
         {suggestion.fullName}
       </Option>
     );
+    const content=(
+        <div>
+          <ul>
+            <li><a>Đăng xuất</a></li>
+          </ul>
+        </div>
+
+    );
     return <div className="contact-box w-2/5 bg-gray-900 text-white rounded-l">
         <div className="flex mt-2">
-          <i className="las la-bars p-2 ml-2 text-xl" />
+          <Popover trigger={"click"} content={content} placement={"bottomLeft"}>
+            <i className="las la-bars p-2 ml-2 text-xl" />
+          </Popover>
           <i className="search-bar las la-search p-2 text-xl" />
           <AutoComplete className="search-bar px-2 bg-gray-900 text-white w-full focus:outline-none focus:ring rounded" value={this.state.keySearch} onSearch={e => this.search(e)} onSelect={e => this.onSelect(e)} placeholder="Search here..">
             {children}
