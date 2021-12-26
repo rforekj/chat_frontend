@@ -79,7 +79,7 @@ export default class ChatWindow extends Component {
                 channelVideoCallRequest: newMessage.channelId
               });
               //this.setState({offerSignal: payload});
-              
+
               // this.setState({caller: newMessage.caller});
               // this.setState({connectionStatus: "RECEIVING"});
               // this.setState({channelVideoCallRequest: newMessage.channelId});
@@ -181,7 +181,7 @@ export default class ChatWindow extends Component {
         video.srcObject = mediaStream;
         localStream = mediaStream;
         video.play();
-       
+
         const sp = new SimplePeer({
           trickle: false,
           initiator: isInitiator,
@@ -230,7 +230,7 @@ export default class ChatWindow extends Component {
         zIndex={2}
         visible={this.state.visible}
         centered={true}
-        width="1000px"
+        width="1200px"
         footer={""}
         afterClose={() => {
         }}
@@ -238,16 +238,17 @@ export default class ChatWindow extends Component {
 
         }}
       >
-        <div>
-          <div style={{display: "flex", justifyContent: "center", flexDirection: "column"}}>
-            <video ref={el => {
-              this.videoSelf = el;
-            }} style={{height: "200px", width: "300px"}}/>
+          <div>
+            <div className="video-call">
+              <video ref={el => {
+                this.videoSelf = el;
+              }} className="video-sizing"/>
 
-            <video ref={el => {
-              this.videoCaller = el;
-            }} style={{height: "200px", width: "300px"}}/>
+              <video ref={el => {
+                this.videoCaller = el;
+              }} className="video-sizing"/>
 
+            </div>
 
             <div className="caller">
               {this.state.caller?this.state.caller.fullName:null}
@@ -262,7 +263,7 @@ export default class ChatWindow extends Component {
                     this.state.channelVideoCallRequest,
                     this.state.offerSignal
                   )
-                
+
                 }
               >
 
@@ -279,16 +280,18 @@ export default class ChatWindow extends Component {
               </button>
             </div>}
 
-            {this.state.connectionStatus === "CONNECTED" && <button
+            {this.state.connectionStatus === "CONNECTED" &&
+
+              <button
+                style={{display:"block",width:"100%"}}
               onClick={() => this.turnVideo()}
             >
               Turn on/off camera
             </button>}
           </div>
 
-        </div>
       </Modal>
-    
+
     </div>;
   }
 }
