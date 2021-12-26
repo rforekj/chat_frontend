@@ -71,10 +71,18 @@ export default class ChatWindow extends Component {
           } else {
             let payload = JSON.parse(newMessage.payload);
             if (payload.type === "offer") {
-              this.setState({offerSignal: payload});
-              this.setState({caller: newMessage.caller});
-              this.setState({connectionStatus: "RECEIVING"});
-              this.setState({channelVideoCallRequest: newMessage.channelId});
+              this.setState({
+                visible: true,
+                offerSignal: payload,
+                caller: newMessage.caller,
+                connectionStatus: "RECEIVING",
+                channelVideoCallRequest: newMessage.channelId
+              });
+              //this.setState({offerSignal: payload});
+              
+              // this.setState({caller: newMessage.caller});
+              // this.setState({connectionStatus: "RECEIVING"});
+              // this.setState({channelVideoCallRequest: newMessage.channelId});
             } else if (payload.type === "answer") {
               if (this.state.simplePeer) {
                 this.state.simplePeer.signal(payload);
@@ -165,14 +173,15 @@ export default class ChatWindow extends Component {
   }
 
   sendOrAcceptInvitation = (isInitiator, channelId, offer) => {
-    navigator.mediaDevices
-      .getUserMedia({video: true, audio: true})
+
+    navigator.mediaDevices.getUserMedia({video: true, audio: true})
       .then(mediaStream => {
+        if (!this.state.visible) this.setState({ visible: true });
         const video = this.videoSelf;
         video.srcObject = mediaStream;
         localStream = mediaStream;
         video.play();
-
+       
         const sp = new SimplePeer({
           trickle: false,
           initiator: isInitiator,
@@ -194,6 +203,8 @@ export default class ChatWindow extends Component {
         );
         sp.on("stream", stream => {
           const video = this.videoCaller;
+          console.log("video caller", video)
+          console.log("video caller stream", stream);
           video.srcObject = stream;
           video.play();
         });
@@ -202,7 +213,7 @@ export default class ChatWindow extends Component {
   };
 
   render() {
-    console.log(this.setState({visible:this.state.connectionStatus === "RECEIVING"}))
+    //console.log(this.setState({visible:this.state.connectionStatus === "RECEIVING"}))
     return <div className="container flex mx-auto m-2 rounded h-screen bg-white border border-blue-800 bg-gray-100">
       <ContactList channels={this.state.channels} selectedChannel={this.getSelectedChannel}
                    channelAvatar={this.props.loggedInUserObj.username.avatar}/>
@@ -245,14 +256,13 @@ export default class ChatWindow extends Component {
             {this.state.connectionStatus === "RECEIVING" && <div>
               <button
                 className="btn-call"
-                onClick={() =>{
-                  // this.setState({visible:this.state.connectionStatus === "RECEIVING"})
+                onClick={() =>
                   this.sendOrAcceptInvitation(
                     false,
                     this.state.channelVideoCallRequest,
                     this.state.offerSignal
                   )
-                }
+                
                 }
               >
 
