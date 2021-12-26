@@ -1,7 +1,7 @@
 import React, {Component} from "react";
 import dataService from "../../Network/dataService";
 import "antd/dist/antd.css";
-import {AutoComplete, Popover} from "antd";
+import {AutoComplete, Badge, Popover} from "antd";
 import group from '../../images/group.png'
 
 const {Option} = AutoComplete;
@@ -82,24 +82,30 @@ export default class ContactList extends Component {
                     className=" rounded-full h-12 text-center mr-5"
                     style={{ width: 50 }}
                   >
-                    <img
-                      className="profile-picture h-full object-cover self-center"
-                      style={{ borderRadius: "50%", width: 50 }}
-                      src={channel.members[0].avatar}
-                      alt="dp"
-                    />
+                    <Badge dot={true} color={"green"} >
+                      <img
+                        className="profile-picture h-full object-cover self-center"
+                        style={{ borderRadius: "50%", width: 50 }}
+                        src={channel.members[0].avatar}
+                        alt="dp"
+                      />
+                    </Badge>
+
                   </div>}
                 {channel.type !== "DIRECT" &&
                   <div
                     className="rounded-full h-12 text-center mr-5"
                     style={{ width: 50 }}
                   >
-                    <img
-                      className="profile-picture h-full object-cover self-center"
-                      style={{ borderRadius: "50%", width: 50 }}
-                      src={group}
-                      alt="dp"
-                    />
+                    <Badge dot={true} color={"green"}>
+                      <img
+                        className="profile-picture h-full object-cover self-center"
+                        style={{ borderRadius: "50%", width: 50 }}
+                        src={group}
+                        alt="dp"
+                      />
+                    </Badge>
+
                   </div>}
               </div>
               <div className="w-full">
