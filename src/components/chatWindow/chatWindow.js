@@ -78,16 +78,30 @@ export default class ChatWindow extends Component {
                 connectionStatus: "RECEIVING",
                 channelVideoCallRequest: newMessage.channelId
               });
-              //this.setState({offerSignal: payload});
 
-              // this.setState({caller: newMessage.caller});
-              // this.setState({connectionStatus: "RECEIVING"});
-              // this.setState({channelVideoCallRequest: newMessage.channelId});
             } else if (payload.type === "answer") {
               if (this.state.simplePeer) {
                 this.state.simplePeer.signal(payload);
               }
             }
+          }
+
+          if(newMessage.hangupUser) {
+            const video = this.videoSelf;
+            const videoCaller = this.videoCaller;
+            video.src = "";
+            videoCaller.src = "";
+            localStream.getTracks().forEach(function(track) {
+              track.stop();
+            });
+            this.setState({
+              visible: false,
+              caller: null,
+              offerSignal: "",
+              connectionStatus: "",
+              channelVideoCallRequest: "",
+              simplePeer: null
+            });
           }
         });
       },
@@ -172,6 +186,29 @@ export default class ChatWindow extends Component {
     localStream.getTracks()[1].enabled = true;
   }
 
+  hangup() {
+    const video = this.videoSelf;
+    const videoCaller = this.videoCaller;
+    video.src = "";
+    videoCaller.src = "";
+    localStream.getTracks().forEach(function(track) {
+      track.stop();
+    });
+    if(this.state.caller) {
+      dataService.cancelCallVideo({ hangupUser: this.state.caller.username });
+    } else {
+      dataService.cancelCallVideo({ hangupUser: this.state.selectedChannel.members[0].username });
+    }
+    this.setState({
+      visible: false,
+      caller: null,
+      offerSignal: "",
+      connectionStatus: "",
+      channelVideoCallRequest: "",
+      simplePeer: null
+    });
+  }
+
   sendOrAcceptInvitation = (isInitiator, channelId, offer) => {
 
     navigator.mediaDevices.getUserMedia({video: true, audio: true})
@@ -195,7 +232,6 @@ export default class ChatWindow extends Component {
 
         sp.on("signal", data => {
           let request = {channelId: channelId, payload: JSON.stringify(data)};
-          console.log("req", request);
           dataService.callVideo(request);
         });
         sp.on("connect", () =>
@@ -203,8 +239,6 @@ export default class ChatWindow extends Component {
         );
         sp.on("stream", stream => {
           const video = this.videoCaller;
-          console.log("video caller", video)
-          console.log("video caller stream", stream);
           video.srcObject = stream;
           video.play();
         });
@@ -234,9 +268,7 @@ export default class ChatWindow extends Component {
         footer={""}
         afterClose={() => {
         }}
-        onCancel={() => {
-
-        }}
+        onCancel={() => this.hangup()}
       >
           <div>
             <div className="video-call">

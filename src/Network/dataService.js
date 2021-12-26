@@ -53,16 +53,20 @@ let dataService = {
     let url = "post/video";
     return request.post(params, url);
   },
+  cancelCallVideo: params => {
+    let url = "post/cancel-video";
+    return request.post(params, url);
+  },
   offline: () => {
-    let url = "user/offline"
-    return request.post({}, url)
+    let url = "user/offline";
+    return request.post({}, url);
   },
   getOnlineUser: () => {
-    let url = "user/online"
-    return request.get( url)
+    let url = "user/online";
+    return request.get(url);
   },
   updateUserInfo: params => {
-    let url = "user/update"
+    let url = "user/update";
     return request.postForm(params, url);
   }
 };

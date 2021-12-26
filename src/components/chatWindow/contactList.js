@@ -97,14 +97,12 @@ export default class ContactList extends Component {
                     className="rounded-full h-12 text-center mr-5"
                     style={{ width: 50 }}
                   >
-                    <Badge dot={true} color={"green"}>
                       <img
                         className="profile-picture h-full object-cover self-center"
                         style={{ borderRadius: "50%", width: 50 }}
                         src={group}
                         alt="dp"
                       />
-                    </Badge>
 
                   </div>}
               </div>
