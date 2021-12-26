@@ -70,6 +70,7 @@ export default class ChatWindow extends Component {
             let payload = JSON.parse(newMessage.payload);
             if (payload.type === "offer") {
               this.setState({ offerSignal: payload });
+              this.setState({ caller: newMessage.caller});
               this.setState({ connectionStatus: "RECEIVING" });
               this.setState({ channelVideoCallRequest: newMessage.channelId });
             } else if (payload.type === "answer") {
@@ -209,16 +210,21 @@ export default class ChatWindow extends Component {
               this.videoCaller = el;
             }} style={{ height: "200px", width: "300px" }} />
 
-          {this.state.connectionStatus === "RECEIVING" && <button
-              onClick={() =>
-                this.sendOrAcceptInvitation(
-                  false,
-                  this.state.channelVideoCallRequest,
-                  this.state.offerSignal
-                )}
-            >
-              ANSWER CALL
-            </button>}
+          {this.state.connectionStatus === "RECEIVING" && <div>
+              <h1>
+                {this.state.caller.fullName}
+              </h1>
+              <button
+                onClick={() =>
+                  this.sendOrAcceptInvitation(
+                    false,
+                    this.state.channelVideoCallRequest,
+                    this.state.offerSignal
+                  )}
+              >
+                ANSWER CALL
+              </button>
+            </div>}
 
           {this.state.connectionStatus === "CONNECTED" && <button
               onClick={() => this.turnVideo()}
