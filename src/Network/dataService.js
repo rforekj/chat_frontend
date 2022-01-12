@@ -67,7 +67,19 @@ let dataService = {
   },
   updateUserInfo: params => {
     let url = "user/update";
-    return request.postForm(params, url);
+    return request.post(params, url);
+  },
+  addUserToChannel: params => {
+    let url = "channel/add-user";
+    return request.post(params, url);
+  },
+  removeUserFromChannel: params => {
+    let url = "channel/remove-user";
+    return request.post(params, url);
+  },
+  createChannel: params => {
+    let url = "channel";
+    return request.post(params, url);
   }
 };
 
